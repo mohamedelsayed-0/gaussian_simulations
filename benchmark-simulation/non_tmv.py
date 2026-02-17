@@ -2,7 +2,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-# ---- import the existing machinery from main script 
+# import the existing functions from main script 
 from gaussian_en_bound import (
     apply_two_mode_phase_insensitive,
     exact_log_negativity,
