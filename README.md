@@ -53,15 +53,10 @@ benchmark-simulation/    code to benchmark and analyse results
 
 ---
 
-## Status
+## Notes
 
-Ongoing independent research project.
-
-Current direction:
-
-- extending beyond symmetric channels
-- identifying cases where the invariant reduction remains analytically tractable
-- developing the results toward a publishable manuscript
+This repository contains the derivation notes, numerical study, generated figures,
+and benchmark scripts for the Gaussian-channel entanglement calculations.
 
 ---
 
