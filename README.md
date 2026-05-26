@@ -1,10 +1,12 @@
 # Invariant Reduction for Symmetric TMSV Gaussian Channels
 
-This project derives closed-form entanglement survival conditions for two-mode squeezed vacuum (TMSV) states transmitted through symmetric phase-insensitive Gaussian channels by working directly from the symplectic-invariant expression for the smallest partially-transposed eigenvalue.
+This repository derives closed-form entanglement survival conditions for two-mode squeezed vacuum (TMSV) states transmitted through symmetric phase-insensitive Gaussian channels by working directly from the symplectic-invariant expression for the smallest partially-transposed eigenvalue.
 
 In the symmetric setting the spectrum reduces to the scalar quantity
 
-nu_tilde_minus = a' - c'
+$$
+\tilde{\nu}_- = a' - c'
+$$
 
 so the PPT condition becomes an explicit, invertible inequality in the physical channel parameters.
 
@@ -12,25 +14,31 @@ so the PPT condition becomes an explicit, invertible inequality in the physical 
 
 ## Main results
 
-Thermal-loss channel
+### Thermal-loss channel
 
 Entanglement survives iff
 
-eta * exp(-2r) + (1 - eta) * (2*N_th + 1) < 1
+$$
+\eta e^{-2r} + (1-\eta)(2N_{\rm th}+1) < 1
+$$
 
 This gives the minimal input squeezing directly as a function of the noise.
 
----
+### Symmetric quantum-limited amplification
 
-Symmetric quantum-limited amplification
-
-g * exp(-2r) + (g - 1) < 1
+$$
+g e^{-2r} + (g-1) < 1
+$$
 
 This yields a sharp transition:
 
-g >= 2  ->  entanglement is impossible for any squeezing
+$$
+g \ge 2 \quad \Rightarrow \quad \text{entanglement is impossible for any squeezing}
+$$
 
-1 < g < 2  ->  r > (1/2) * ln( g / (2 - g) )
+$$
+1 < g < 2 \quad \Rightarrow \quad r > \frac{1}{2}\ln\!\left(\frac{g}{2-g}\right)
+$$
 
 At g = 2 the amplifier injects one shot-noise unit per mode, creating a hard noise budget that arbitrarily large squeezing cannot overcome.
 
@@ -44,12 +52,39 @@ At g = 2 the amplifier injects one shot-noise unit per mode, creating a hard noi
 
 ---
 
+## Scope
+
+The main reduction applies to symmetric phase-insensitive Gaussian channels acting independently on both modes of a TMSV input state. The numerical scripts compare the closed-form behavior with full partially-transposed symplectic-spectrum evaluation and include one non-TMSV check as supporting context.
+
+---
+
+## Reproducing figures
+
+Install the Python dependencies:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+Regenerate the figures:
+
+```bash
+sh scripts/reproduce_figures.sh
+```
+
+The scripts write generated plots to `figs/`.
+
+---
+
 ## Repository structure
 
-short_derivation/   invariant reduction and closed-form thresholds  
-long_note/          numerical and analytic study  
-figs/               generated plots  
-benchmark-simulation/    code to benchmark and analyse results
+```text
+short_derivation/       invariant reduction and closed-form thresholds
+long_note/              numerical and analytic study
+figs/                   generated plots
+benchmark-simulation/   code to benchmark and analyse results
+scripts/                reproducibility entry points
+```
 
 ---
 
@@ -57,6 +92,12 @@ benchmark-simulation/    code to benchmark and analyse results
 
 This repository contains the derivation notes, numerical study, generated figures,
 and benchmark scripts for the Gaussian-channel entanglement calculations.
+
+---
+
+## Citation and license
+
+Citation metadata is provided in `CITATION.cff`. The repository code is released under the MIT License; see `LICENSE`.
 
 ---
 
