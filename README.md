@@ -74,6 +74,18 @@ sh scripts/reproduce_figures.sh
 
 The scripts write generated plots to `figs/`.
 
+Additional cascade utilities:
+
+```bash
+python scripts/cascade_figures.py
+python scripts/validate_cascade.py
+python scripts/n_max_table.py
+```
+
+These generate the cascade figures, validate the scalar cascade formulas
+against exact symplectic-eigenvalue computation, and print the
+loss-compensating span table for manuscript use.
+
 ---
 
 ## Repository structure
