@@ -4,6 +4,11 @@
 from __future__ import annotations
 
 import math
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from cascade_lib import n_max_strict  # noqa: E402
 
 
 ETAS = [0.99, 0.95, 0.90, 0.80, 0.70, 0.50]
@@ -11,15 +16,6 @@ ETAS = [0.99, 0.95, 0.90, 0.80, 0.70, 0.50]
 
 def db_per_span(eta: float) -> float:
     return -10.0 * math.log10(eta)
-
-
-def n_max_strict(eta: float) -> int:
-    """Largest integer n satisfying n < eta / (2*(1-eta))."""
-    boundary = eta / (2.0 * (1.0 - eta))
-    nearest = round(boundary)
-    if abs(boundary - nearest) < 1e-12:
-        return max(0, nearest - 1)
-    return max(0, math.floor(boundary))
 
 
 def print_plain_text() -> None:

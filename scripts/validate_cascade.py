@@ -4,10 +4,23 @@
 from __future__ import annotations
 
 import math
+import sys
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Callable, Iterable
 
 import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from cascade_lib import (  # noqa: E402
+    amplifier,
+    nu_minus_exact,
+    nu_minus_scalar,
+    pure_loss,
+    rc_thermal,
+    thermal_loss,
+    thermal_sensitivity,
+)
 
 
 TOL = 1e-10
@@ -21,68 +34,6 @@ class CheckResult:
     @property
     def passed(self) -> bool:
         return self.max_err < TOL
-
-
-def omega_2() -> np.ndarray:
-    return np.array([[0.0, 1.0], [-1.0, 0.0]])
-
-
-def omega_4() -> np.ndarray:
-    o2 = omega_2()
-    z2 = np.zeros((2, 2))
-    return np.block([[o2, z2], [z2, o2]])
-
-
-def tmsv_cm(r: float) -> np.ndarray:
-    a = math.cosh(2.0 * r)
-    c = math.sinh(2.0 * r)
-    i2 = np.eye(2)
-    z = np.diag([1.0, -1.0])
-    return np.block([[a * i2, c * z], [c * z, a * i2]])
-
-
-def apply_symmetric_channel(V: np.ndarray, tau: float, nu: float) -> np.ndarray:
-    a = V[:2, :2]
-    c = V[:2, 2:]
-    b = V[2:, 2:]
-    i2 = np.eye(2)
-    return np.block(
-        [
-            [tau * a + nu * i2, tau * c],
-            [tau * c.T, tau * b + nu * i2],
-        ]
-    )
-
-
-def nu_minus_exact(r: float, channels: Iterable[tuple[float, float]]) -> float:
-    V = tmsv_cm(r)
-    for tau, nu in channels:
-        V = apply_symmetric_channel(V, tau, nu)
-
-    p = np.diag([1.0, 1.0, 1.0, -1.0])
-    vpt = p @ V @ p
-    eigvals = np.linalg.eigvals(1j * omega_4() @ vpt)
-    vals = np.sort(np.abs(eigvals.real + 1j * eigvals.imag))
-    return float(vals[0])
-
-
-def nu_minus_scalar(r: float, channels: Iterable[tuple[float, float]]) -> float:
-    val = math.exp(-2.0 * r)
-    for tau, nu in channels:
-        val = tau * val + nu
-    return val
-
-
-def thermal_loss(eta: float, nth: float) -> tuple[float, float]:
-    return eta, (1.0 - eta) * (2.0 * nth + 1.0)
-
-
-def pure_loss(eta: float) -> tuple[float, float]:
-    return eta, 1.0 - eta
-
-
-def amplifier(g: float) -> tuple[float, float]:
-    return g, g - 1.0
 
 
 def max_exact_scalar_error(cases: Iterable[tuple[float, list[tuple[float, float]]]]) -> float:
@@ -117,15 +68,15 @@ def check_cascade() -> CheckResult:
 
 
 def check_n_amp() -> CheckResult:
-    cases = []
+    errors = []
     for r in np.linspace(0.0, 3.0, 31):
         for n in range(1, 8):
             for g in [1.02, 1.1, 1.3, 1.6]:
                 channels = [amplifier(g)] * n
                 closed = (g**n) * math.exp(-2.0 * float(r)) + (g**n - 1.0)
                 exact = nu_minus_exact(float(r), channels)
-                cases.append(abs(exact - closed))
-    return CheckResult("Proposition 5 (n-amp)", max(cases))
+                errors.append(abs(exact - closed))
+    return CheckResult("Proposition 5 (n-amp)", max(errors))
 
 
 def check_spans() -> CheckResult:
@@ -151,20 +102,11 @@ def check_gain_split() -> CheckResult:
     for r in np.linspace(0.0, 3.0, 31):
         for gains in gain_sets:
             channels = [amplifier(g) for g in gains]
-            G = math.prod(gains)
-            closed = G * math.exp(-2.0 * float(r)) + (G - 1.0)
+            total_gain = math.prod(gains)
+            closed = total_gain * math.exp(-2.0 * float(r)) + (total_gain - 1.0)
             exact = nu_minus_exact(float(r), channels)
             errors.append(abs(exact - closed))
     return CheckResult("Proposition 7 (gain-split)", max(errors))
-
-
-def rc_thermal(eta: float, nth: complex) -> complex:
-    denom = 1.0 - (1.0 - eta) * (2.0 * nth + 1.0)
-    return 0.5 * np.log(eta / denom)
-
-
-def thermal_sensitivity(eta: float, nth: float) -> float:
-    return (1.0 - eta) / (1.0 - (1.0 - eta) * (2.0 * nth + 1.0))
 
 
 def check_sensitivity() -> CheckResult:
@@ -179,14 +121,7 @@ def check_sensitivity() -> CheckResult:
     return CheckResult("Proposition 8 (sensitivity)", max(errors))
 
 
-def print_results(results: list[CheckResult]) -> None:
-    width = max(len(r.name) for r in results)
-    for result in results:
-        status = "PASS" if result.passed else "FAIL"
-        print(f"{result.name:<{width}}  max err = {result.max_err:.2e}  [{status}]")
-
-
-def main() -> None:
+def run_checks() -> list[CheckResult]:
     checks: list[Callable[[], CheckResult]] = [
         check_original_thermal,
         check_original_amplifier,
@@ -196,7 +131,18 @@ def main() -> None:
         check_gain_split,
         check_sensitivity,
     ]
-    results = [check() for check in checks]
+    return [check() for check in checks]
+
+
+def print_results(results: list[CheckResult]) -> None:
+    width = max(len(r.name) for r in results)
+    for result in results:
+        status = "PASS" if result.passed else "FAIL"
+        print(f"{result.name:<{width}}  max err = {result.max_err:.2e}  [{status}]")
+
+
+def main() -> None:
+    results = run_checks()
     print_results(results)
     failed = [r for r in results if not r.passed]
     if failed:

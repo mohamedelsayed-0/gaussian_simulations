@@ -66,25 +66,39 @@ Install the Python dependencies:
 python -m pip install -r requirements.txt
 ```
 
-Regenerate the figures:
+Use the Makefile workflow:
+
+```bash
+make figures
+make validate
+make tests
+make tables
+make assets
+```
+
+Or regenerate the original and cascade figures directly:
 
 ```bash
 sh scripts/reproduce_figures.sh
 ```
 
-The scripts write generated plots to `figs/`.
+The scripts write generated plots to `figs/` and figure data to `data/`.
 
 Additional cascade utilities:
 
 ```bash
 python scripts/cascade_figures.py
 python scripts/validate_cascade.py
+python scripts/validate_asymmetric_formula.py
+python scripts/finite_squeezing_span_limit.py
 python scripts/n_max_table.py
+python scripts/manuscript_assets.py
 ```
 
 These generate the cascade figures, validate the scalar cascade formulas
-against exact symplectic-eigenvalue computation, and print the
-loss-compensating span table for manuscript use.
+against exact symplectic-eigenvalue computation, validate the asymmetric
+two-channel formula, generate finite-squeezing span-limit data, and print
+LaTeX-ready tables/figure blocks for manuscript use.
 
 ---
 
@@ -94,8 +108,10 @@ loss-compensating span table for manuscript use.
 short_derivation/       invariant reduction and closed-form thresholds
 long_note/              numerical and analytic study
 figs/                   generated plots
+data/                   CSV data generated from figure scripts
 benchmark-simulation/   code to benchmark and analyse results
 scripts/                reproducibility entry points
+tests/                  pytest checks for threshold and cascade formulas
 ```
 
 ---

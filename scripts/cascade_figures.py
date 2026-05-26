@@ -3,14 +3,28 @@
 
 from __future__ import annotations
 
+import csv
 import math
 import os
+import sys
+from pathlib import Path
 
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from cascade_lib import (  # noqa: E402
+    n_amp_nu_minus,
+    n_amp_rc,
+    n_max_strict,
+    span_boundary,
+    span_rc,
+    thermal_boundary,
+    thermal_sensitivity,
+)
 
 
 plt.rcParams.update(
@@ -25,61 +39,44 @@ plt.rcParams.update(
 
 
 FIGDIR = "figs"
+DATADIR = "data"
 
 
-def ensure_figdir() -> None:
+def ensure_dirs() -> None:
     os.makedirs(FIGDIR, exist_ok=True)
+    os.makedirs(DATADIR, exist_ok=True)
 
 
-def n_amp_nu_minus(r: np.ndarray, n: int, g: float) -> np.ndarray:
-    return (g**n) * np.exp(-2.0 * r) + (g**n - 1.0)
-
-
-def n_amp_rc(n: int, g: float) -> float:
-    gn = g**n
-    if gn >= 2.0:
-        return math.inf
-    return 0.5 * math.log(gn / (2.0 - gn))
-
-
-def span_boundary(eta: float) -> float:
-    return eta / (2.0 * (1.0 - eta))
-
-
-def n_max_strict(eta: float) -> int:
-    boundary = span_boundary(eta)
-    nearest = round(boundary)
-    if abs(boundary - nearest) < 1e-12:
-        return max(0, nearest - 1)
-    return max(0, math.floor(boundary))
-
-
-def span_rc(n: np.ndarray, eta: float) -> np.ndarray:
-    budget = 1.0 - 2.0 * n * (1.0 - eta) / eta
-    out = np.full_like(n, np.nan, dtype=float)
-    mask = budget > 0.0
-    out[mask] = 0.5 * np.log(1.0 / budget[mask])
+def write_rows(filename: str, fieldnames: list[str], rows: list[dict[str, float | int | str]]) -> str:
+    out = os.path.join(DATADIR, filename)
+    with open(out, "w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
     return out
-
-
-def thermal_boundary(eta: float) -> float:
-    return eta / (2.0 * (1.0 - eta))
-
-
-def thermal_sensitivity(eta: float, nth: np.ndarray) -> np.ndarray:
-    denom = 1.0 - (1.0 - eta) * (2.0 * nth + 1.0)
-    return (1.0 - eta) / denom
 
 
 def plot_n_amplifier_cascade() -> str:
     r = np.linspace(0.0, 3.0, 500)
     g = 1.3
+    rows: list[dict[str, float | int | str]] = []
 
     fig, ax = plt.subplots(figsize=(6.0, 4.5))
     for n in range(1, 6):
         cutoff = 2.0 ** (1.0 / n)
         y = n_amp_nu_minus(r, n, g)
         rc = n_amp_rc(n, g)
+        for rv, yv in zip(r, y):
+            rows.append(
+                {
+                    "r": float(rv),
+                    "n": n,
+                    "g": g,
+                    "nu_minus": float(yv),
+                    "cutoff_gain": cutoff,
+                    "r_c": rc if math.isfinite(rc) else "",
+                }
+            )
         label = f"n={n}, cutoff={cutoff:.3f}"
         ax.plot(r, y, label=label)
         if math.isfinite(rc) and r[0] <= rc <= r[-1]:
@@ -96,6 +93,7 @@ def plot_n_amplifier_cascade() -> str:
     out = os.path.join(FIGDIR, "n_amplifier_cascade.png")
     fig.savefig(out, dpi=200)
     plt.close(fig)
+    write_rows("n_amplifier_cascade.csv", ["r", "n", "g", "nu_minus", "cutoff_gain", "r_c"], rows)
     return out
 
 
@@ -103,6 +101,7 @@ def plot_amplifier_cutoff_vs_n() -> str:
     ns = np.arange(1, 31)
     cutoffs = 2.0 ** (1.0 / ns)
     marks = [1, 2, 5, 10, 20]
+    rows = [{"n": int(n), "cutoff_gain": float(c)} for n, c in zip(ns, cutoffs)]
 
     fig, ax = plt.subplots(figsize=(6.0, 4.5))
     ax.plot(ns, cutoffs, marker="o", markersize=3, linewidth=1.5)
@@ -137,17 +136,30 @@ def plot_amplifier_cutoff_vs_n() -> str:
     out = os.path.join(FIGDIR, "amplifier_cutoff_vs_n.png")
     fig.savefig(out, dpi=200)
     plt.close(fig)
+    write_rows("amplifier_cutoff_vs_n.csv", ["n", "cutoff_gain"], rows)
     return out
 
 
 def plot_span_limit() -> str:
     etas = [0.5, 0.7, 0.85, 0.95]
     n = np.linspace(0.0, 10.0, 1200)
+    rows: list[dict[str, float | int | str]] = []
 
     fig, ax = plt.subplots(figsize=(6.0, 4.5))
     for eta in etas:
         boundary = span_boundary(eta)
         y = span_rc(n, eta)
+        nmax = n_max_strict(eta)
+        for nv, yv in zip(n, y):
+            rows.append(
+                {
+                    "n": float(nv),
+                    "eta": eta,
+                    "r_c": "" if np.isnan(yv) else float(yv),
+                    "boundary": boundary,
+                    "n_max": nmax,
+                }
+            )
         ax.plot(n, y, label=fr"$\eta={eta}$, boundary={boundary:.2f}")
         if 0.0 <= boundary <= 10.0:
             ax.axvline(boundary, linestyle=":", linewidth=1.0, alpha=0.75)
@@ -173,20 +185,32 @@ def plot_span_limit() -> str:
     out = os.path.join(FIGDIR, "span_limit.png")
     fig.savefig(out, dpi=200)
     plt.close(fig)
+    write_rows("span_limit.csv", ["n", "eta", "r_c", "boundary", "n_max"], rows)
     return out
 
 
 def plot_thermal_sensitivity() -> str:
     etas = [0.5, 0.7, 0.9]
+    rows: list[dict[str, float | str]] = []
 
     fig, ax = plt.subplots(figsize=(6.0, 4.5))
     for eta in etas:
         boundary = thermal_boundary(eta)
         nth = np.linspace(0.0, 0.985 * boundary, 500)
         sens = thermal_sensitivity(eta, nth)
+        nth_unit = (eta - (1.0 - eta)) / (2.0 * (1.0 - eta))
+        for nthv, sensv in zip(nth, sens):
+            rows.append(
+                {
+                    "N_th": float(nthv),
+                    "eta": eta,
+                    "sensitivity": float(sensv),
+                    "boundary_N_th": boundary,
+                    "unit_response_N_th": nth_unit if 0.0 <= nth_unit < boundary else "",
+                }
+            )
         ax.plot(nth, sens, label=fr"$\eta={eta}$")
 
-        nth_unit = (eta - (1.0 - eta)) / (2.0 * (1.0 - eta))
         if 0.0 <= nth_unit < boundary:
             ax.scatter([nth_unit], [1.0], color="black", s=18, zorder=3)
             ax.annotate(
@@ -208,11 +232,16 @@ def plot_thermal_sensitivity() -> str:
     out = os.path.join(FIGDIR, "thermal_sensitivity.png")
     fig.savefig(out, dpi=200)
     plt.close(fig)
+    write_rows(
+        "thermal_sensitivity.csv",
+        ["N_th", "eta", "sensitivity", "boundary_N_th", "unit_response_N_th"],
+        rows,
+    )
     return out
 
 
 def main() -> None:
-    ensure_figdir()
+    ensure_dirs()
     outputs = [
         plot_n_amplifier_cascade(),
         plot_amplifier_cutoff_vs_n(),
