@@ -17,6 +17,7 @@ endif
 figures:
 	$(FIGURE_ENV) $(FIGURE_PYTHON) scripts/cascade_figures.py
 	$(FIGURE_ENV) $(FIGURE_PYTHON) scripts/finite_squeezing_span_limit.py
+	$(FIGURE_ENV) $(FIGURE_PYTHON) scripts/ordering_effect.py
 
 validate:
 	$(PYTHON) scripts/validate_cascade.py

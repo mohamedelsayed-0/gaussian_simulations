@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import math
+from itertools import permutations
 from typing import Iterable
 
 import numpy as np
@@ -96,6 +97,24 @@ def nu_minus_scalar(r: float, channels: Iterable[Channel]) -> float:
     for tau, nu in channels:
         val = tau * val + nu
     return val
+
+
+def nu_minus_all_orderings(r: float, channels: list[Channel]) -> list[tuple[tuple[Channel, ...], float]]:
+    """Compute scalar PT eigenvalues for every distinct channel ordering."""
+    seen: set[tuple[Channel, ...]] = set()
+    out: list[tuple[tuple[Channel, ...], float]] = []
+    for perm in permutations(channels):
+        if perm in seen:
+            continue
+        seen.add(perm)
+        out.append((perm, nu_minus_scalar(r, perm)))
+    return out
+
+
+def best_worst_ordering_gap(r: float, channels: list[Channel]) -> tuple[float, float]:
+    """Return the best and worst nu_minus values over channel orderings."""
+    vals = [value for _, value in nu_minus_all_orderings(r, channels)]
+    return min(vals), max(vals)
 
 
 def nu_minus_asymmetric_closed(r: float, channel1: Channel, channel2: Channel) -> float:

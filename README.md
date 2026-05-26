@@ -91,14 +91,15 @@ python scripts/cascade_figures.py
 python scripts/validate_cascade.py
 python scripts/validate_asymmetric_formula.py
 python scripts/finite_squeezing_span_limit.py
+python scripts/ordering_effect.py
 python scripts/n_max_table.py
 python scripts/manuscript_assets.py
 ```
 
 These generate the cascade figures, validate the scalar cascade formulas
 against exact symplectic-eigenvalue computation, validate the asymmetric
-two-channel formula, generate finite-squeezing span-limit data, and print
-LaTeX-ready tables/figure blocks for manuscript use.
+two-channel formula, generate finite-squeezing and ordering-effect data,
+and print LaTeX-ready tables/figure blocks for manuscript use.
 
 ---
 

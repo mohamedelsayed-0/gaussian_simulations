@@ -53,6 +53,14 @@ FIGURES = [
         ),
     },
     {
+        "path": "figs/ordering_effect_gap.png",
+        "label": "fig:ordering-effect-gap",
+        "caption": (
+            "Ordering effect for a mixed channel cascade. "
+            "The gap between best and worst orderings appears because earlier noise is transformed by later channels."
+        ),
+    },
+    {
         "path": "figs/thermal_sensitivity.png",
         "label": "fig:thermal-sensitivity",
         "caption": (

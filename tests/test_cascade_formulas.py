@@ -10,7 +10,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from cascade_lib import (  # noqa: E402
     amplifier,
+    best_worst_ordering_gap,
     n_amp_nu_minus,
+    nu_minus_all_orderings,
     nu_minus_asymmetric_closed,
     nu_minus_exact,
     nu_minus_exact_asymmetric,
@@ -56,6 +58,20 @@ def test_gain_split_depends_only_on_total_gain_without_loss() -> None:
             exact = nu_minus_exact(float(r), channels)
             closed = total_gain * math.exp(-2.0 * float(r)) + (total_gain - 1.0)
             assert abs(exact - closed) < 1e-10
+
+
+def test_pure_amplifier_ordering_is_invariant() -> None:
+    channels = [amplifier(1.04), amplifier(1.11), amplifier(1.23)]
+    for r in np.linspace(0.0, 3.0, 11):
+        values = [value for _, value in nu_minus_all_orderings(float(r), channels)]
+        assert max(values) - min(values) < 1e-12
+
+
+def test_mixed_channel_ordering_can_change_survival_margin() -> None:
+    channels = [pure_loss(0.82), thermal_loss(0.9, 0.08), amplifier(1.25)]
+    best, worst = best_worst_ordering_gap(1.0, channels)
+    assert best < worst
+    assert worst - best > 0.05
 
 
 def test_asymmetric_formula_matches_exact_symplectic_eigenvalue() -> None:
