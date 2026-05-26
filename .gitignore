@@ -3,3 +3,33 @@ __pycache__/
 
 .venv/
 **/.venv/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Python
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+
+# Local editor and scratch files
+.vscode/
+.idea/
+*.bak
+*.tmp

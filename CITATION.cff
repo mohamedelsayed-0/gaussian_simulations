@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite it using the metadata below."
+title: "Invariant Reduction for Symmetric TMSV Gaussian Channels"
+authors:
+  - family-names: Elsayed
+    given-names: Mohamed
+affiliation: "Engineering Science, University of Toronto"
+version: 0.1.0
+date-released: 2026-05-26
+license: MIT
+repository-code: "https://github.com/mohamedelsayed-0/gaussian_simulations"
+url: "https://elsayedmohamed.com/"
+keywords:
+  - continuous-variable quantum information
+  - Gaussian channels
+  - entanglement
+  - two-mode squeezed vacuum
