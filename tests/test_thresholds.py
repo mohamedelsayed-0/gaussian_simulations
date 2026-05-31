@@ -10,11 +10,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from cascade_lib import (  # noqa: E402
     amplifier,
+    beta_span_noise_moments,
+    loss_compensating_survives,
     n_max_finite_squeezing,
     n_max_strict,
     nu_minus_exact,
+    outage_survival_clt,
     pure_loss,
     rc_thermal,
+    required_squeezing_for_reliability_db,
     span_boundary,
     thermal_loss,
     thermal_sensitivity,
@@ -58,3 +62,20 @@ def test_thermal_sensitivity_matches_complex_step_derivative() -> None:
             complex_deriv = np.imag(rc_thermal(eta, float(nth) + 1j * h)) / h
             closed = thermal_sensitivity(eta, float(nth))
             assert abs(float(complex_deriv) - closed) < 1e-10
+
+
+def test_random_span_outage_budget_uses_loss_compensating_sum() -> None:
+    etas = [0.98, 0.97, 0.99]
+    assert loss_compensating_survives(1.0, etas)
+    assert not loss_compensating_survives(0.01, etas)
+
+
+def test_beta_span_noise_moments_and_required_squeezing_are_finite() -> None:
+    mean, variance = beta_span_noise_moments(120.0, 6.0)
+    assert mean > 0.0
+    assert variance > 0.0
+    prob = outage_survival_clt(1.0, 5, 120.0, 6.0)
+    required_db = required_squeezing_for_reliability_db(5, 120.0, 6.0, 0.95)
+    assert 0.0 <= prob <= 1.0
+    assert math.isfinite(required_db)
+    assert required_db > 0.0

@@ -1,0 +1,4 @@
+rank,channel,tau,noise,ordering_score
+1,amplifier g=1.25,1.25,0.25,1.0
+2,thermal loss eta=0.90 Nth=0.08,0.9,0.11599999999999996,-0.8620689655172414
+3,pure loss eta=0.82,0.82,0.18000000000000005,-1.0

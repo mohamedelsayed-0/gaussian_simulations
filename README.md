@@ -1,72 +1,64 @@
-# Invariant Reduction for Symmetric TMSV Gaussian Channels
+# Entanglement Noise Budgets for Gaussian Channel Cascades
 
-This repository derives closed-form entanglement survival conditions for two-mode squeezed vacuum (TMSV) states transmitted through symmetric phase-insensitive Gaussian channels by working directly from the symplectic-invariant expression for the smallest partially-transposed eigenvalue.
+This repository supports a paper on closed-form entanglement survival budgets
+for two-mode squeezed vacuum (TMSV) states transmitted through phase-insensitive
+Gaussian channel cascades.
 
-In the symmetric setting the spectrum reduces to the scalar quantity
-
-$$
-\tilde{\nu}_- = a' - c'
-$$
-
-so the PPT condition becomes an explicit, invertible inequality in the physical channel parameters.
-
----
-
-## Main results
-
-### Thermal-loss channel
-
-Entanglement survives iff
+The main deterministic setting is symmetric transmission: the same channel acts
+on both modes at each stage. In that case the partially transposed symplectic
+eigenvalue reduces to a scalar affine recurrence
 
 $$
-\eta e^{-2r} + (1-\eta)(2N_{\rm th}+1) < 1
+\tilde{\nu}_-^{(m+1)} = \tau_{m+1}\tilde{\nu}_-^{(m)} + n_{m+1},
+\qquad
+\tilde{\nu}_-^{(0)} = e^{-2r},
 $$
 
-This gives the minimal input squeezing directly as a function of the noise.
-
-### Symmetric quantum-limited amplification
-
-$$
-g e^{-2r} + (g-1) < 1
-$$
-
-This yields a sharp transition:
+where $\tau$ is the channel gain/transmissivity and $n$ is the channel added
+noise. For an ordered chain,
 
 $$
-g \ge 2 \quad \Rightarrow \quad \text{entanglement is impossible for any squeezing}
+\tilde{\nu}_- =
+\left(\prod_{i=1}^n \tau_i\right)e^{-2r}
++ \sum_{j=1}^n n_j\prod_{k=j+1}^n\tau_k.
 $$
 
-$$
-1 < g < 2 \quad \Rightarrow \quad r > \frac{1}{2}\ln\!\left(\frac{g}{2-g}\right)
-$$
+The repository treats this as a link-budget tool: it turns the PPT condition
+$\tilde{\nu}_-<1$ into explicit constraints on amplifier gain, span count,
+thermal margin, channel ordering, and stochastic outage probability.
 
-At g = 2 the amplifier injects one shot-noise unit per mode, creating a hard noise budget that arbitrarily large squeezing cannot overcome.
+## Paper-facing results
 
----
+- Thermal-loss threshold and its inverted squeezing requirement.
+- Quantum-limited amplifier cutoff at $g=2$ and the $n$-amplifier budget
+  $g<2^{1/n}$.
+- Strict and finite-squeezing span limits for loss-compensating links.
+- Optimal-ordering rule for mixed cascades, verified against brute-force
+  permutation sweeps.
+- Random-span entanglement-outage estimates for fluctuating transmissivity.
+- Asymmetric and one-sided cascade recurrence for follow-up analysis.
+- Operational metrics derived from the same budget: log-negativity and coherent
+  teleportation fidelity.
 
-## Why this is useful
+These formulas do not claim that deterministic amplifiers beat loss for quantum
+communication. They quantify the noise budget and no-go behavior of that
+architecture.
 
-- Eliminates repeated symplectic-spectrum evaluation in symmetric settings
-- Converts the entanglement condition into a parameter-level design constraint
-- Makes the threshold analytically invertible for resource estimation
+## Reproducing results
 
----
-
-## Scope
-
-The main reduction applies to symmetric phase-insensitive Gaussian channels acting independently on both modes of a TMSV input state. The numerical scripts compare the closed-form behavior with full partially-transposed symplectic-spectrum evaluation and include one non-TMSV check as supporting context.
-
----
-
-## Reproducing figures
-
-Install the Python dependencies:
+Install dependencies:
 
 ```bash
 python -m pip install -r requirements.txt
 ```
 
-Use the Makefile workflow:
+Run the full workflow:
+
+```bash
+make reproduce
+```
+
+Useful individual targets:
 
 ```bash
 make figures
@@ -76,59 +68,25 @@ make tables
 make assets
 ```
 
-Or regenerate the original and cascade figures directly:
-
-```bash
-sh scripts/reproduce_figures.sh
-```
-
-The scripts write generated plots to `figs/` and figure data to `data/`.
-
-Additional cascade utilities:
-
-```bash
-python scripts/cascade_figures.py
-python scripts/validate_cascade.py
-python scripts/validate_asymmetric_formula.py
-python scripts/finite_squeezing_span_limit.py
-python scripts/ordering_effect.py
-python scripts/n_max_table.py
-python scripts/manuscript_assets.py
-```
-
-These generate the cascade figures, validate the scalar cascade formulas
-against exact symplectic-eigenvalue computation, validate the asymmetric
-two-channel formula, generate finite-squeezing and ordering-effect data,
-and print LaTeX-ready tables/figure blocks for manuscript use.
-
----
+The scripts write figures to `figs/` and CSV data to `data/`.
 
 ## Repository structure
 
 ```text
-short_derivation/       invariant reduction and closed-form thresholds
-long_note/              numerical and analytic study
-figs/                   generated plots
-data/                   CSV data generated from figure scripts
-benchmark-simulation/   code to benchmark and analyse results
-scripts/                reproducibility entry points
-tests/                  pytest checks for threshold and cascade formulas
+scripts/        scalar formulas, validation scripts, and figure generators
+tests/          pytest checks against exact symplectic-spectrum computation
+figs/           paper-facing generated figures
+data/           generated CSV data used by figures and tables
+archive/        old notes, derivations, prototype scripts, and legacy figures
 ```
 
----
-
-## Notes
-
-This repository contains the derivation notes, numerical study, generated figures,
-and benchmark scripts for the Gaussian-channel entanglement calculations.
-
----
+The archived files are preserved for reference but are not part of the current
+paper workflow.
 
 ## Citation and license
 
-Citation metadata is provided in `CITATION.cff`. The repository code is released under the MIT License; see `LICENSE`.
-
----
+Citation metadata is provided in `CITATION.cff`. The code is released under the
+MIT License; see `LICENSE`.
 
 ## Author
 

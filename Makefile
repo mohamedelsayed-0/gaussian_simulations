@@ -18,6 +18,9 @@ figures:
 	$(FIGURE_ENV) $(FIGURE_PYTHON) scripts/cascade_figures.py
 	$(FIGURE_ENV) $(FIGURE_PYTHON) scripts/finite_squeezing_span_limit.py
 	$(FIGURE_ENV) $(FIGURE_PYTHON) scripts/ordering_effect.py
+	$(FIGURE_ENV) $(FIGURE_PYTHON) scripts/stochastic_outage.py
+	$(FIGURE_ENV) $(FIGURE_PYTHON) scripts/asymmetric_cascade.py
+	$(FIGURE_ENV) $(FIGURE_PYTHON) scripts/operational_rates.py
 
 validate:
 	$(PYTHON) scripts/validate_cascade.py
@@ -25,6 +28,7 @@ validate:
 
 tables:
 	$(PYTHON) scripts/n_max_table.py
+	$(PYTHON) scripts/optimal_ordering.py
 
 tests:
 	$(PYTHON) -m pytest tests
